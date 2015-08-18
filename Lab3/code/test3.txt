@@ -1,0 +1,33 @@
+add		$t0,$s0,$s0		
+addi 	$t1, $s0, 10
+addi 	$t2,$s0, 13
+mul 	$t3, $t1, $t1
+j	Jump
+bubble:
+li		$t0, 10
+li		$t1, 4
+mul		$t4, $t0, $t1
+outer:
+addi	$t6, $0, 8
+sub		$t0, $s4, $t6
+li		$t1, 0
+inner:	
+lw		$t2, 4($t0)
+lw		$t3, 0($t0)
+blt		$t2, $t3, no_swap
+sw 		$t2, 0($t0)
+sw 		$t3, 4($t0)
+li 		$t1, 1
+no_swap:
+addi 	$t5, $0, 4
+sub		$t0, $t0, $t5
+bgez	$t0, inner
+bnez	$t1, outer
+j 		End
+Jump: 	
+sub 	$t2, $t2, $t1
+Loop: 	
+add 	$t4, $t3, $t2
+beq 	$t1, $t2, Loop
+j 		bubble
+End:

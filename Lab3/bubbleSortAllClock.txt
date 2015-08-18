@@ -1,0 +1,152 @@
+
+
+	Mem[0] = 8'b0100;//4
+	Mem[4] = 8'b0101;//5
+	Mem[8] = 8'b0110;//6
+	Mem[12] = 8'b0111;//7
+	Mem[16] = 8'b1000;//8
+	Mem[20] = 8'b1001;//9
+	Mem[24] = 8'b1010;//10
+	Mem[28] = 8'b0010;//2
+	Mem[32] = 8'b0001;//1
+	Mem[36] = 8'b0011;//3
+	m0 = 4 m1 = 5 m2 =6 m3 = 7, m4 = 8, m5 = 9, m6 = 10, m7 = 2, m8 = 1, m9 = 3
+teminal +4
+
+pc 8 r18 =10
+pc 12 r19 = 13
+16: r20 = 100
+20: jump to 92
+88 ???
+92 r 19 = 3
+96: r21 = 103
+100: if 10 = 3 jump to Loop (show 20 but won't do anything)
+104: jump 24
+
+24: r17 = 10
+28: r18 = 4
+32: r21 = 40
+36: r23 =8
+40: r17= r21-r23 = 32
+44: r18 = 0m
+
+
+48: r19=mem[r17+4] = m9 = 3
+52: r20=mem[r17] = m8 = 1
+56: if(r19<r20) then j 72               lw fail!!!!
+60: mem[r17] = m8 = r19   m8 = 3
+64: mem[r17 +4] = m9 = r20 = 1
+68: r18 = 1
+
+72: r22 = 4
+76: r17 = r17- r22 = 32 - 4 =28
+
+
+80: bgez if(r17>=0) jump 48   28>=0  (will show pc 44 but not perform it)
+48: r19 = mem[r17 +4] = m8 = 3
+52: r20 = mem[r17] = m7 = 2
+56: r19<r20? then j 72
+60: mem[r17] = m7 = r19   m7 = 3
+64: mem[r17+4] = m8 = r20  m8 = 2
+68: r18 = 1
+72: r22 = 4
+76: r17 = r17- r22 = 28 - 4 =24
+
+
+80: bgez if(r17>=0) jump 48   24>=0  (will show pc 44 but not perform it)
+48: r19 = mem[r17 +4] = m7 = 3
+52: r20 = mem[r17] = m8 = 2
+56: r19<r20? then j 72
+60: mem[r17] = m7 = r19   m7 = 3
+64: mem[r17+4] = m8 = r20  m8 = 2
+68: r18 = 1
+
+
+72: r22 = 4
+76: r17 = r17- r22 = 24 - 4 =20
+
+80: bgez if(r17>=0) jump 48   20>=0  (will show pc 44 but not perform it)
+48: r19 = mem[r17 +4] = m7 = 3
+52: r20 = mem[r17] = m8 = 2
+56: r19<r20? then j 72
+60: mem[r17] = m7 = r19   m7 = 3
+64: mem[r17+4] = m8 = r20  m8 = 2
+68: r18 = 1
+72: r22 = 4
+76: r17 = r17- r22 = 20 - 4 =20
+
+80: bgez if(r17>=0) jump 48   20>=0  (will show pc 44 but not perform it)
+48: r19 = mem[r17 +4] = m6 = 3
+52: r20 = mem[r17] = m7 = 10
+56: r19<r20? then j 72          (will show pc 68 but not perform it)
+
+72: r22 = 4
+76: r17 = r17- r22 = 20 - 4 =16
+
+80: bgez if(r17>=0) jump 48   20>=0  (will show pc 44 but not perform it)
+48: r19 = mem[r17 +4] = m5 = 10
+52: r20 = mem[r17] = m4 = 8
+
+
+56: r19<r20? then j 72
+60: mem[r17] = m4 = r19   m4 = 10
+64: mem[r17+4] = m5 = r20  m5 = 8
+68: r18 = 1
+72: r22 = 4
+76: r17 = r17- r22 = 16-4 =12
+
+80: bgez if(r17>=0) jump 48   20>=0  (will show pc 44 but not perform it)
+48: r19 = mem[r17 +4] = m4 = 10
+52: r20 = mem[r17] = m3 = 7
+
+56: r19<r20? then j 72          (will show pc 68 but not perform it)
+60: mem[r17] = m3 = r19   m3 = 10
+64: mem[r17+4] = m4 = r20  m4 = 7
+68: r18 = 1
+72: r22 = 4
+76: r17 = r17- r22 = 12 -4 =8
+
+80: bgez if(r17>=0) jump 48   20>=0  (will show pc 44 but not perform it)
+48: r19 = mem[r17 +4] = m3 = 10
+52: r20 = mem[r17] = m2 = 6
+
+56: r19<r20? then j 72          (will show pc 68 but not perform it)
+60: mem[r17] = m2 = r19   m2 = 10
+64: mem[r17+4] = m3 = r20  m3 = 6
+68: r18 = 1
+72: r22 = 4
+76: r17 = r17- r22 = 8 - 4 =4
+
+80: bgez if(r17>=0) jump 48   20>=0  (will show pc 44 but not perform it)
+48: r19 = mem[r17 +4] = m2 = 10
+52: r20 = mem[r17] = m1 = 5
+
+56: r19<r20? then j 72          (will show pc 68 but not perform it)
+
+60: mem[r17] = m1 = r19   m1 = 10
+64: mem[r17+4] = m2 = r20  m2 = 5
+68: r18 = 1
+72: r22 = 4
+76: r17 = r17- r22 = 0
+
+
+80: bgez if(r17>=0) jump 48   20>=0  (will show pc 44 but not perform it)
+48: r19 = mem[r17 +4] = m1 = 10
+52: r20 = mem[r17] = m0 = 4
+
+56: r19<r20? then j 72          (will show pc 68 but not perform it)
+
+60: mem[r17] = m1 = r19   m1 = 10
+64: mem[r17+4] = m2 = r20  m2 = 4
+68: r18 = 1
+72: r22 = 4
+76: r17 = r17- r22 = -4
+
+84 j 		End 112 01110000         jump imme<<2
+000010 00000000000000000000011100
+
+
+
+
+
+

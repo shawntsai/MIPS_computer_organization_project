@@ -1,0 +1,7 @@
+iverilog -o my_design ALU.v ALU_Ctrl.v Adder.v Decoder.v Data_Memory.v Instr_Memory.v MUX_2to1.v MUX_3to1.v MUX_4to1.v ProgramCounter.v Reg_File.v Shift_Left_Two_32.v Shift_Left_Two_26.v Sign_Extend.v   TestBench.v Pipe_Reg.v Fowarding_unit.v Hazard_detection_unit.v Pipe_CPU_1.v
+
+○ → vvp my_design
+
+
+
+

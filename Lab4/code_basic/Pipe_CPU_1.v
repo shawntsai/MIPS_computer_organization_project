@@ -1,0 +1,362 @@
+//Subject:     CO project 4 - Pipe CPU 1
+//--------------------------------------------------------------------------------
+//Version:     1
+//--------------------------------------------------------------------------------
+//Writer:      
+//----------------------------------------------
+//Date:        
+//----------------------------------------------
+//Description: 
+//--------------------------------------------------------------------------------
+module Pipe_CPU_1(
+        clk_i,
+		rst_i
+		);    
+/****************************************
+I/O ports
+****************************************/
+input clk_i;
+input rst_i;
+
+/****************************************
+Internal signal
+****************************************/
+/**** IF stage ****/
+wire [32-1:0]mux_pc_, pc_;
+wire [32-1:0]Adder1_;
+wire [32-1:0]instrucitonMemory_;
+
+
+/**** ID stage ****/
+
+//control signal
+wire [32-1:0]if_id_pc_, if_id_instrMem_;
+
+wire [32-1:0]registerFile_RSdata_;
+wire [32-1:0]registerFile_RTdata_;
+
+wire [32-1:0]signExtend_;
+
+//ID/EX input
+//for WB
+wire decoder_regwrite_;
+wire MemToReg_;
+//for M
+wire MemRead_;
+wire MemWrite_;
+wire decoder_branch_;
+//for EX
+wire decoder_RegDst_;
+wire decoder_ALUSrc_;
+wire [3-1:0]decoder_ALUOp_;
+
+
+
+/**** EX stage ****/
+
+//control signal
+
+
+/**** MEM stage ****/
+
+//control signal
+
+
+/**** WB stage ****/
+
+//control signal
+
+
+/****************************************
+Instnatiate modules
+****************************************/
+//Instantiate the components in IF stage
+MUX_2to1 #(.size(32)) Mux4(
+        .data0_i(Adder1_),
+        .data1_i(ex_mem_adder2_),
+        .select_i(MuxForBranch_&ex_mem_decoder_branch_),
+        .data_o(mux_pc_)
+        );   
+
+ProgramCounter PC(
+		.clk_i(clk_i),
+		.rst_i(rst_i),
+		.pc_in_i(mux_pc_),
+		.pc_out_o(pc_)
+        );
+
+Instr_Memory IM(
+		.addr_i(pc_),
+		.instr_o(instrucitonMemory_)
+	    );
+			
+Adder Adder1(
+	    .src1_i(32'd4),     
+		.src2_i(pc_),
+		.sum_o(Adder1_)
+		);
+
+		
+Pipe_Reg #(.size(64)) IF_ID(       //N is the total length of input/output
+        .clk_i(clk_i),
+		.rst_i(rst_i),
+		.data_i({Adder1_,instrucitonMemory_}),
+		.data_o({if_id_pc_,if_id_instrMem_})
+		);
+		
+//Instantiate the components in ID stage
+Reg_File RF(
+    .clk_i(clk_i),
+	.rst_i(rst_i),
+    .RSaddr_i(if_id_instrMem_[25:21]),
+    .RTaddr_i(if_id_instrMem_[20:16]),
+    .RDaddr_i(mem_wb_mux2_),
+    .RDdata_i(mux3_),
+    .RegWrite_i(mem_wb_regwrite_),
+    .RSdata_o(registerFile_RSdata_),
+    .RTdata_o(registerFile_RTdata_)
+		);
+//p3
+wire [2-1:0]decoder_branchType_; //may no need in project4
+
+Decoder Control(
+    .instr_op_i(if_id_instrMem_[31:26]),
+	.RegWrite_o(decoder_regwrite_),
+	.ALU_op_o(decoder_ALUOp_),
+	.ALUSrc_o(decoder_ALUSrc_),
+	.RegDst_o(decoder_RegDst_),
+	.Branch_o(decoder_branch_),
+	.BranchType_o(decoder_branchType_),//p3
+	// Jump_oselectattrList//p3
+	.MemRead_o(MemRead_),//p3
+	.MemWrite_o(MemWrite_),//p3
+	.MemtoReg_o(MemToReg_)//p3
+	// jr_oselectattrList
+	// jal_o
+		);
+
+Sign_Extend Sign_Extend(
+    .data_i(if_id_instrMem_[15:0]),
+    .data_o(signExtend_)
+		);	
+
+//for output wire
+wire id_ex_regwrite_;
+wire id_ex_MemToReg_;
+//for M
+wire id_ex_MemRead_;
+wire id_ex_MemWrite_;
+wire id_ex_decoder_branch_;
+wire [2-1:0]id_ex_decoder_branchType_;//p3
+//for EX
+wire id_ex_RegDst_;
+wire id_ex_ALUSrc_;
+wire [3-1:0]id_ex_ALUOp_;
+wire [32-1:0]id_ex_pc_;
+wire [32-1:0]id_ex_RSdata_;//32
+wire [32-1:0]id_ex_RTdata_;//32
+wire [32-1:0]id_ex_signExtend_;
+wire [5-1:0] id_ex_instrMem_20_16_;
+wire [5-1:0] id_ex_instrMem_15_11_;
+Pipe_Reg #(.size(150)) ID_EX(
+    .clk_i(clk_i),
+	.rst_i(rst_i),
+	.data_i(
+	{ decoder_regwrite_,
+	  MemToReg_,
+	  MemRead_,
+	  MemWrite_,
+	  decoder_branch_,
+	  decoder_branchType_,//2 p3
+	  decoder_RegDst_, //1
+	  decoder_ALUSrc_,//3
+	  decoder_ALUOp_, //3
+	  if_id_pc_,//32  ....may have problem
+	  registerFile_RSdata_,//32
+	  registerFile_RTdata_,//32
+	  signExtend_,//32
+	  if_id_instrMem_[20:16],//5
+	  if_id_instrMem_[15:11]//5
+	}
+		),
+	.data_o(
+	{
+	//for WB
+	id_ex_regwrite_,
+	id_ex_MemToReg_,
+	//for M
+	id_ex_MemRead_,
+	id_ex_MemWrite_,
+	id_ex_decoder_branch_,
+	id_ex_decoder_branchType_,//2
+	//for EX
+	id_ex_RegDst_, //1
+	id_ex_ALUSrc_,//3
+	id_ex_ALUOp_,//3
+	//pc
+	id_ex_pc_,
+	//RF
+	id_ex_RSdata_,//32
+	id_ex_RTdata_,//32
+	id_ex_signExtend_,//32
+	id_ex_instrMem_20_16_,//5
+	id_ex_instrMem_15_11_//5
+	}
+		)
+		);
+		
+wire [32-1:0] adder2_;
+//Instantiate the components in EX stage	
+Adder Adder2(
+	    .src1_i(id_ex_pc_),     
+		.src2_i(id_ex_signExtend_<<2),//after shift left 2
+		.sum_o(adder2_)
+		);   
+
+wire [32-1:0]ALUResult_; 
+wire ALUZero_;
+
+ALU ALU(
+    .src1_i(id_ex_RSdata_),
+	.src2_i(mux1_),
+	.ctrl_i(ALUCtrl_ALU_),
+	.shamt_i(),
+	.result_o(ALUResult_),
+	.zero_o(ALUZero_)
+		);
+
+wire [4-1:0]ALUCtrl_ALU_; 
+ALU_Ctrl ALU_Control(
+	.funct_i(id_ex_signExtend_[5:0]),
+    .ALUOp_i(id_ex_ALUOp_),
+    .ALUCtrl_o(ALUCtrl_ALU_)
+		);
+wire [32-1:0] mux1_;
+MUX_2to1 #(.size(32)) Mux1(
+   .data0_i(id_ex_RTdata_),
+   .data1_i(id_ex_signExtend_),
+   .select_i(id_ex_ALUSrc_),
+   .data_o(mux1_)
+        );
+wire [5-1:0] mux2_;
+
+MUX_2to1 #(.size(5)) Mux2(
+               .data0_i(id_ex_instrMem_20_16_),
+               .data1_i(id_ex_instrMem_15_11_),
+               .select_i(id_ex_RegDst_),
+               .data_o(mux2_)
+        );
+
+//wires of EX/MEM output
+	//for WB
+wire	ex_mem_regwrite_;
+wire	ex_mem_MemToReg_;
+	//for M
+wire	ex_mem_MemRead_;
+wire	ex_mem_MemWrite_;
+wire	ex_mem_decoder_branch_;
+wire [2-1:0] ex_mem_decoder_branchType_;
+wire [32-1:0]	ex_mem_adder2_;
+wire	ex_mem_ALUZero_;
+wire [32-1:0]	ex_mem_ALUResult_;
+wire [32-1:0]	ex_mem_RTdata_;
+wire [5-1:0]	ex_mem_mux2_;
+Pipe_Reg #(.size(109)) EX_MEM(
+    .clk_i(clk_i),
+	.rst_i(rst_i),
+	.data_i(
+	{
+	//for WB
+	id_ex_regwrite_,//1
+	id_ex_MemToReg_,//1
+	//for M
+	id_ex_MemRead_,//1
+	id_ex_MemWrite_,//1
+	id_ex_decoder_branch_,//1
+	id_ex_decoder_branchType_,//2
+	adder2_,//32
+	ALUZero_,//1
+	ALUResult_,//32
+	id_ex_RTdata_,//32
+	mux2_//5
+	}
+		),
+	.data_o(
+	{
+	ex_mem_regwrite_,
+	ex_mem_MemToReg_,
+	//for M
+	ex_mem_MemRead_,
+	ex_mem_MemWrite_,
+	ex_mem_decoder_branch_,
+	ex_mem_decoder_branchType_,
+	ex_mem_adder2_,
+	ex_mem_ALUZero_,
+	ex_mem_ALUResult_,
+	ex_mem_RTdata_,
+	ex_mem_mux2_
+	}
+		)
+		);
+			   
+//Instantiate the components in MEM stage
+wire MuxForBranch_;
+MUX_4to1 #(.size(1)) MuxForBranch(
+        .data0_i(ex_mem_ALUZero_),//BEQ
+        .data1_i(ex_mem_ALUResult_==32'd1),//BEQZ
+        .data2_i(ex_mem_ALUResult_==32'd1),//BLT
+        .data3_i(~ex_mem_ALUZero_),//BNE
+        .select_i(ex_mem_decoder_branchType_),
+        .data_o(MuxForBranch_)
+    );
+
+wire [31:0] dataMemory_;
+Data_Memory DM(
+	.clk_i(clk_i),
+	.addr_i(ex_mem_ALUResult_),
+	.data_i(ex_mem_RTdata_),
+	.MemRead_i(ex_mem_MemRead_),
+	.MemWrite_i(ex_mem_MemWrite_),
+	.data_o(dataMemory_)
+	    );
+
+	//for WB
+wire	     mem_wb_regwrite_;
+wire	     mem_wb_MemToReg_;
+wire [32-1:0]mem_wb_dataMemory_;
+wire [32-1:0]mem_wb_ALUResult_;
+wire [5-1:0] mem_wb_mux2_;
+Pipe_Reg #(.size(71)) MEM_WB(
+    .clk_i(clk_i),
+	.rst_i(rst_i),
+	.data_i(
+	{
+		ex_mem_regwrite_,//1
+		ex_mem_MemToReg_,//1
+		dataMemory_,//32
+		ex_mem_ALUResult_,//32
+		ex_mem_mux2_//5
+	}
+		),
+	.data_o(
+	{
+		mem_wb_regwrite_,
+		mem_wb_MemToReg_,
+		mem_wb_dataMemory_,
+		mem_wb_ALUResult_,
+		mem_wb_mux2_
+	}
+		)
+		);
+
+wire[32-1:0] mux3_;
+//Instantiate the components in WB stage
+MUX_2to1 #(.size(32)) Mux3(
+               .data0_i(mem_wb_ALUResult_),//maybe need to adjust
+               .data1_i(mem_wb_dataMemory_),
+               .select_i(mem_wb_MemToReg_),
+               .data_o(mux3_)
+        );
+
+endmodule
+

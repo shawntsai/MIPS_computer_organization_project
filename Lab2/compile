@@ -1,0 +1,7 @@
+compile
+○ → iverilog -o my_design ALU.v ALU_Ctrl.v Adder.v Decoder.v  Instr_Memory.v MUX_2to1.v  ProgramCounter.v Reg_File.v  Sign_Extend.v   Test_Bench.v   Simple_Single_CPU.v Shift_Left_Two_32.v
+
+
+○ → vvp my_design
+
+
